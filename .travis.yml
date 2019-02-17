@@ -1,0 +1,22 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t multicontainer -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run multicontainer npm test -- --coverage
+
+after_success:
+  - docker build -t gurucharan07/multi-client ./client
+  - docker build -t gurucharan07/multi-nginx ./nginx
+  - docker build -t gurucharan07/multi-server ./server
+  - docker build -t gurucharan07/multi-worker ./worker
+  #log into docker hub
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  #push to dockerhub
+  - docker push gurucharan07/multi-client
+  - docker push gurucharan07/multi-nginx
+  - docker push gurucharan07/multi-server
+  - docker push gurucharan07/multi-worker
